@@ -1,5 +1,7 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // matikan error display di production, tapi masih log
 require_once 'helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
@@ -35,7 +37,7 @@ $data = [
     'balance'       => $user->getBalance() ?? 0,
     'transactions'  => $user->getTransactions() ?? [],
     'last_activity' => $user->getLastActivity() ?? date('Y-m-d'),
-    'mainWallet'    => $user->getMainWallet() ?? 'DANA',
+    'mainWallet'    => $user->getMainWallet() ?? 'Lainnya',
 ];
 
 $message = $_SESSION['message'] ?? '';
@@ -61,7 +63,7 @@ unset($_SESSION['message']);
     .stat .label { font-size: 0.9rem; color: #666; }
     .stat .value { font-size: 1.3rem; font-weight: bold; color: #333; }
     .progress-bar { height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #6bbfeb; width: <?= min(100, $data['balance'] / $data['target'] * 100) ?>%; border-radius: 6px; }
+    .progress-fill { height: 100%; background: #6bbfeb; width: 0%; border-radius: 6px; }
     .progress-percent { text-align: center; margin-top: 8px; font-weight: bold; color: #6bbfeb; }
 
     /* Alasan Nabung */
@@ -127,28 +129,41 @@ if ($last->diff($today)->days > 1): ?>
 <?php endif; ?>
 
 <!-- Progress -->
-<div class="progress-section">
-  <div class="progress-stats">
-    <div class="stat">
-      <div class="label">Target</div>
-      <div class="value">Rp <?= number_format($data['target']) ?></div>
-    </div>
-    <div class="stat">
-      <div class="label">Saldo</div>
-      <div class="value">Rp <?= number_format($data['balance']) ?></div>
-    </div>
-    <div class="stat">
-      <div class="label">Kurang</div>
-      <div class="value">Rp <?= number_format(max(0, $data['target'] - $data['balance'])) ?></div>
-    </div>
-  </div>
+<?php
+$target = (int)($data['target'] ?? 0);
+$balance = (int)($data['balance'] ?? 0);
+$progressPercent = $target > 0 ? min(100, ($balance / $target) * 100) : 0;
+?>
 
-  <div class="progress-bar">
-    <div class="progress-fill"></div>
-  </div>
-  <div class="progress-percent">
-    <?= number_format($data['balance'] / $data['target'] * 100, 1) ?>% tercapai
-  </div>
+<div class="progress-section">
+  <?php if ($target == 0): ?>
+    <div style="text-align: center; padding: 20px; color: #e65100; font-weight: bold; line-height: 1.5;">
+      ⚠️ Target belum diatur.<br>
+      <a href="pengaturan.php" style="color: #6bbfeb; font-weight: bold;">Atur target dulu yuk! 😊</a>
+    </div>
+  <?php else: ?>
+    <div class="progress-stats">
+      <div class="stat">
+        <div class="label">Target</div>
+        <div class="value">Rp <?= number_format($target) ?></div>
+      </div>
+      <div class="stat">
+        <div class="label">Saldo</div>
+        <div class="value">Rp <?= number_format($balance) ?></div>
+      </div>
+      <div class="stat">
+        <div class="label">Kurang</div>
+        <div class="value">Rp <?= number_format(max(0, $target - $balance)) ?></div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: <?= $progressPercent ?>%;"></div>
+    </div>
+    <div class="progress-percent">
+      <?= number_format($progressPercent, 1) ?>% tercapai
+    </div>
+  <?php endif; ?>
 </div>
 
 <!-- Alasan Nabung -->
@@ -176,26 +191,37 @@ if ($last->diff($today)->days > 1): ?>
 <a href="logout.php" class="logout"> 🚪 Keluar </a>
 
 <!-- === POP-UP PEMASUKAN === -->
-<dialog id="incomeDialog">
+<dialog id="incomeDialog" onshow="document.getElementById('incomeAmount').focus()">
   <button class="close-btn" onclick="this.parentElement.close()">×</button>
   <h2> ➕ Tambah Pemasukan </h2>
   <form method="POST" action="pemasukan.php">
     <input type="hidden" name="user" value="<?= htmlspecialchars($username) ?>">
+
     <label>Jumlah (Rp)</label>
-    <input type="number" id="incomeAmount" name="amount" min="1" required placeholder="e.g. 10000">
+    <input 
+      type="text" 
+      id="incomeAmount" 
+      name="amount_raw" 
+      required 
+      placeholder="e.g. 10000"
+      oninput="formatRp(this)"
+    >
+    <input type="hidden" name="amount" id="incomeAmountValue">
+
     <!-- Opsi Cepat -->
     <div class="quick-amounts">
-      <button type="button" class="btn-quick" onclick="document.getElementById('incomeAmount').value = 10000">10rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('incomeAmount').value = 50000">50rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('incomeAmount').value = 100000">100rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('incomeAmount').value = 500000">500rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('incomeAmount').value = 1000000">1jt</button>
+      <button type="button" class="btn-quick" onclick="setQuickIncome(10000)">10rb</button>
+      <button type="button" class="btn-quick" onclick="setQuickIncome(50000)">50rb</button>
+      <button type="button" class="btn-quick" onclick="setQuickIncome(100000)">100rb</button>
+      <button type="button" class="btn-quick" onclick="setQuickIncome(500000)">500rb</button>
+      <button type="button" class="btn-quick" onclick="setQuickIncome(1000000)">1jt</button>
     </div>
-    <!-- ✅ Ganti ke getter -->
+
     <input type="hidden" name="location" value="<?= htmlspecialchars($data['mainWallet']) ?>">
     <div style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-radius: 8px; font-size: 0.9rem;">
       💰 Nabung di: <strong><?= htmlspecialchars($data['mainWallet']) ?></strong>
     </div>
+
     <div class="modal-actions">
       <button type="button" class="btn-outline" onclick="document.getElementById('incomeDialog').close()">Batal</button>
       <button type="submit" class="btn-primary">Simpan & Nabung!</button>
@@ -203,32 +229,83 @@ if ($last->diff($today)->days > 1): ?>
   </form>
 </dialog>
 
+<script>
+function formatRp(input) {
+  let val = input.value.replace(/[^0-9]/g, '');
+  if (val) {
+    input.value = 'Rp ' + Number(val).toLocaleString('id-ID');
+    document.getElementById('incomeAmountValue').value = val;
+  } else {
+    input.value = '';
+    document.getElementById('incomeAmountValue').value = '';
+  }
+}
+
+function setQuickIncome(val) {
+  const input = document.getElementById('incomeAmount');
+  input.value = 'Rp ' + val.toLocaleString('id-ID');
+  document.getElementById('incomeAmountValue').value = val;
+  input.focus();
+}
+</script>
+
 <!-- === POP-UP PENGELUARAN === -->
-<dialog id="expenseDialog">
+<dialog id="expenseDialog" onshow="document.getElementById('expenseAmount').focus()">
   <button class="close-btn" onclick="this.parentElement.close()">×</button>
   <h2> ➖ Tambah Pengeluaran </h2>
   <form method="POST" action="pengeluaran.php">
     <input type="hidden" name="user" value="<?= htmlspecialchars($username) ?>">
+
     <label>Jumlah (Rp)</label>
-    <input type="number" id="expenseAmount" name="amount" min="1" required placeholder="e.g. 5000">
+    <input 
+      type="text"
+      id="expenseAmount" 
+      name="amount_raw" 
+      required 
+      placeholder="e.g. 5000"
+      oninput="formatRp(this)"
+    >
+    <input type="hidden" name="amount" id="expenseAmountValue">
+
     <!-- Opsi Cepat -->
     <div class="quick-amounts">
-      <button type="button" class="btn-quick" onclick="document.getElementById('expenseAmount').value = 10000">10rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('expenseAmount').value = 50000">50rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('expenseAmount').value = 100000">100rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('expenseAmount').value = 500000">500rb</button>
-      <button type="button" class="btn-quick" onclick="document.getElementById('expenseAmount').value = 1000000">1jt</button>
+      <button type="button" class="btn-quick" onclick="setQuick(10000)">10rb</button>
+      <button type="button" class="btn-quick" onclick="setQuick(50000)">50rb</button>
+      <button type="button" class="btn-quick" onclick="setQuick(100000)">100rb</button>
+      <button type="button" class="btn-quick" onclick="setQuick(500000)">500rb</button>
+      <button type="button" class="btn-quick" onclick="setQuick(1000000)">1jt</button>
     </div>
+
     <input type="hidden" name="source" value="<?= htmlspecialchars($data['mainWallet']) ?>">
     <div style="margin: 10px 0; padding: 10px; background: #ffebee; border-radius: 8px; font-size: 0.9rem;">
       💸 Diambil dari: <strong><?= htmlspecialchars($data['mainWallet']) ?></strong>
     </div>
+
     <div class="modal-actions">
       <button type="button" class="btn-outline" onclick="document.getElementById('expenseDialog').close()">Batal</button>
       <button type="submit" class="btn-danger">Tarik Dana</button>
     </div>
   </form>
 </dialog>
+
+<script>
+function formatRp(input) {
+  let val = input.value.replace(/[^0-9]/g, '');
+  if (val) {
+    input.value = 'Rp ' + Number(val).toLocaleString('id-ID');
+    document.getElementById('expenseAmountValue').value = val;
+  } else {
+    input.value = '';
+    document.getElementById('expenseAmountValue').value = '';
+  }
+}
+
+function setQuick(val) {
+  const el = document.getElementById('expenseAmount');
+  el.value = 'Rp ' + val.toLocaleString('id-ID');
+  document.getElementById('expenseAmountValue').value = val;
+}
+</script>
 
 <!-- === POP-UP RIWAYAT === -->
 <dialog id="historyDialog">
@@ -271,7 +348,7 @@ setTimeout(() => { document.getElementById('notif').style.display = 'none'; }, 3
 <?php endif; ?>
 
 <!-- Congrats Modal -->
-<?php if ($data['balance'] >= $data['target']): ?>
+<?php if ($target > 0 && $balance >= $target): ?>
 <div id="congratsModal">
   <div class="content">
     <div style="font-size: 4.5rem; margin-bottom: 15px;"> 🎉 </div>

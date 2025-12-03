@@ -10,7 +10,7 @@ class User {
     private $congratsShown;
     private $mainWallet;
 
-    public function __construct($username, $target, $reason, $mainWallet = 'DANA') {
+    public function __construct($username, $target, $reason, $mainWallet = 'Lainnya') {
         $this->username = $username;
         $this->target = $target;
         $this->reason = $reason;
@@ -30,11 +30,13 @@ class User {
     public function getLastActivity() { return $this->lastActivity; }
     public function getMainWallet() { return $this->mainWallet; }
 
-    // === SETTER  ===
+    // === SETTER ===
     public function setTarget($target) {
-        if ($target > 0) {
-            $this->target = $target;
-        }
+        $this->target = max(0, (int)$target); // ✅ Boleh 0
+    }
+
+    public function setReason($reason) {
+        $this->reason = trim($reason) ?: 'Belum diisi'; // ✅ Wajib ada!
     }
 
     public function addIncome($amount, $location = null) {

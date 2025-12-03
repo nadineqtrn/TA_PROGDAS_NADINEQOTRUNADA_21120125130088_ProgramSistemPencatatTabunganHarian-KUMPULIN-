@@ -4,7 +4,7 @@ require_once 'helpers.php';
 
 $username = $_POST['user'] ?? '';
 $amount = (int)($_POST['amount'] ?? 0);
-$location = $_POST['location'] ?? 'DANA';
+$location = $_POST['location'] ?? 'Lainnya';
 
 if (!$username || $amount <= 0) {
     $_SESSION['message'] = "❌ Jumlah wajib diisi!";

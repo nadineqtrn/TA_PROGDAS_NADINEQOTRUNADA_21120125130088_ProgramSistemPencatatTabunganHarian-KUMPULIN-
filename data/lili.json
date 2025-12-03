@@ -2,9 +2,16 @@
     "username": "lili",
     "target": 5000000,
     "reason": "hp",
-    "balance": 0,
-    "transactions": [],
-    "last_activity": "2025-12-02",
+    "balance": 5000000,
+    "transactions": [
+        {
+            "type": "Masuk",
+            "amount": 5000000,
+            "location": "Bank",
+            "date": "2025-12-03 09:05:16"
+        }
+    ],
+    "last_activity": "2025-12-03",
     "congrats_shown": false,
     "main_wallet": "Bank"
 }

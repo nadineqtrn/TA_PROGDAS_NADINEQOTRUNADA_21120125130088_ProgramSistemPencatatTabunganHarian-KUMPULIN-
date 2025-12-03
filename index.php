@@ -11,12 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
     $username = trim($_POST['username']);
     $target = (int)$_POST['target'];
     $reason = trim($_POST['reason']);
-    $mainWallet = trim($_POST['main_wallet']) ?: 'DANA';
+    $mainWallet = trim($_POST['main_wallet']) ?: 'Lainnya';
 
 
     if ($username && $target > 0 && $reason) {
         require_once 'helpers.php';
-        // ✅ Kirim $mainWallet langsung ke constructor
+
         $user = new User($username, $target, $reason, $mainWallet);
         $user->save();
         $_SESSION['user'] = $username;
@@ -100,14 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
       <label>Dompet Utama</label>
       <select name="main_wallet" required>
         <option value="">-- Pilih --</option>
-        <option value="Celengan">Celengan</option>
+        <option value="BRI">Bank BRI</option>
         <option value="BCA">Bank BCA</option>
         <option value="Mandiri">Bank Mandiri</option>
-        <option value="DANA" selected>DANA</option>
+        <option value="DANA">DANA</option>
         <option value="OVO">OVO</option>
         <option value="ShopeePay">ShopeePay</option>
         <option value="Gopay">GoPay</option>
-        <option value="Tunai">Uang Tunai</option>
+        <option value="Lainnya">Lainnya</option>
       </select>
       <div class="actions">
         <button type="button" class="btn-outline" onclick="document.getElementById('setupDialog').close()">Nanti Aja</button>

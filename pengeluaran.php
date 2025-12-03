@@ -4,7 +4,7 @@ require_once 'helpers.php';
 
 $username = $_POST['user'] ?? '';
 $amount = (int)($_POST['amount'] ?? 0);
-$source = $_POST['source'] ?? 'DANA';
+$source = $_POST['source'] ?? 'Lainnya';
 
 if (!$username || $amount <= 0) {
     $_SESSION['message'] = "❌ Jumlah wajib diisi!";
@@ -25,7 +25,7 @@ if ($user->getBalance() < $amount) {
     exit;
 }
 
-$user->addExpense($amount);
+$user->addExpense($amount) + "RP";
 $user->save();
 
 $locations = getLocations();
