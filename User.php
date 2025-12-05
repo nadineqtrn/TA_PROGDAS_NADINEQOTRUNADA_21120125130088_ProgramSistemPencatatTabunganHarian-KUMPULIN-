@@ -32,7 +32,7 @@ class User {
 
     // === SETTER ===
     public function setTarget($target) {
-        $this->target = max(0, (int)$target); // ✅ Boleh 0
+        $this->target = max(0, (int)$target); 
     }
 
     public function setReason($reason) {
@@ -89,7 +89,7 @@ class User {
         $json = json_decode(file_get_contents($file), true);
         if (!$json) return null;
 
-        $mainWallet = $json['main_wallet'] ?? 'DANA';
+        $mainWallet = $json['main_wallet'] ?? 'Lainnya';
         $user = new User(
             $json['username'],
             $json['target'],

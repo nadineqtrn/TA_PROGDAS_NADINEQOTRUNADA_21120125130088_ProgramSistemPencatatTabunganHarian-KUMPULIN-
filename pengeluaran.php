@@ -25,11 +25,13 @@ if ($user->getBalance() < $amount) {
     exit;
 }
 
-$user->addExpense($amount) + "RP";
+$user->addExpense($amount);
 $user->save();
 
 $locations = getLocations();
-$locationLabel = $locations[$user->getMainWallet()] ?? $user->getMainWallet();
+
+$mainWallet = $user->getMainWallet() ?? 'Lainnya';
+$locationLabel = $locations[$mainWallet] ?? $mainWallet;
 
 $quotes = [
     "Tarik dana Rp " . number_format($amount) . " dari {$locationLabel} berhasil!",

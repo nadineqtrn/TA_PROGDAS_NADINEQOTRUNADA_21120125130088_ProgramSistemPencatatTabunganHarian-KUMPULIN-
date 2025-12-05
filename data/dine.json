@@ -1,0 +1,29 @@
+{
+    "username": "dine",
+    "target": 600000,
+    "reason": "minum",
+    "balance": 1040000,
+    "transactions": [
+        {
+            "type": "Masuk",
+            "amount": 50000,
+            "location": "Lainnya",
+            "date": "2025-12-05 05:59:51"
+        },
+        {
+            "type": "Keluar",
+            "amount": 10000,
+            "source": "Lainnya",
+            "date": "2025-12-05 05:59:56"
+        },
+        {
+            "type": "Masuk",
+            "amount": 1000000,
+            "location": "Lainnya",
+            "date": "2025-12-05 06:00:31"
+        }
+    ],
+    "last_activity": "2025-12-05",
+    "congrats_shown": false,
+    "main_wallet": "Lainnya"
+}

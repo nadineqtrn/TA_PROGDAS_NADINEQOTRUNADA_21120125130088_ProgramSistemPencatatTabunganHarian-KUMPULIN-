@@ -1,17 +1,41 @@
 {
     "username": "ciki",
-    "target": 500000,
-    "reason": "mamam",
-    "balance": 50000,
+    "target": 100000,
+    "reason": "minum",
+    "balance": 100000,
     "transactions": [
         {
             "type": "Masuk",
             "amount": 50000,
             "location": "Mandiri",
             "date": "2025-12-03 09:10:17"
+        },
+        {
+            "type": "Keluar",
+            "amount": 50000,
+            "source": "Mandiri",
+            "date": "2025-12-04 15:46:55"
+        },
+        {
+            "type": "Masuk",
+            "amount": 100000,
+            "location": "Mandiri",
+            "date": "2025-12-05 05:02:14"
+        },
+        {
+            "type": "Keluar",
+            "amount": 50000,
+            "source": "Mandiri",
+            "date": "2025-12-05 05:02:25"
+        },
+        {
+            "type": "Masuk",
+            "amount": 50000,
+            "location": "Mandiri",
+            "date": "2025-12-05 05:30:52"
         }
     ],
-    "last_activity": "2025-12-03",
+    "last_activity": "2025-12-05",
     "congrats_shown": false,
     "main_wallet": "Mandiri"
 }
